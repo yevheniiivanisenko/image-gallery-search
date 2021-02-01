@@ -1,37 +1,36 @@
-const axios = require('axios')
-const HttpClient = require('./HttpClient')
-
-const IMAGE_SERVICE_URL = `${process.env.IMAGE_SERVICE}/images`
+const {
+  AuthInterceptedHttpClient: HttpClient,
+} = require('./AuthInterceptedHttpClient')
+const { TokenManager } = require('./TokenManager')
 
 const toFlatImageList = imagePages =>
   imagePages.reduce((list, page) => {
     return [...list, ...page.pictures]
   }, [])
 
-class Images extends HttpClient {
+class ImagesService {
+  #LOG_LABEL = 'ImagesService:'
+
   async fetchImage(imageId) {
-    const uri = `${this.serviceURI}/${imageId}`
-
-    console.info(`fetchImage: ${uri}`)
-
-    const response = await axios.get(uri, {
+    console.log(`${this.#LOG_LABEL}fetchImage`)
+    const token = await TokenManager.getToken()
+    const response = await HttpClient.getInstance().get(`/images/${imageId}`, {
       headers: {
-        Authorization: `Bearer ${this.tokenManager.getToken()}`,
+        Authorization: `Bearer ${token}`,
       },
     })
     return response.data
   }
 
   async fetchPageImages(page = 1) {
-    const uri = `${this._SERVICE_URL}?page=${page}`
-
-    console.log(`fetchPageImages: ${uri}`)
-
-    this.setRequestHeader(
-      'Authorization',
-      `Bearer ${this._tokenManager.getToken()}`,
+    console.log(`${this.#LOG_LABEL}fetchPageImages`)
+    const token = await TokenManager.getToken()
+    const response = await HttpClient.getInstance().get(
+      `/images?page=${page}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
     )
-    const response = await this._request.get(`?page=${page}`)
     return response.data
   }
 
@@ -58,4 +57,4 @@ class Images extends HttpClient {
   }
 }
 
-module.exports = { Images }
+module.exports = ImagesService

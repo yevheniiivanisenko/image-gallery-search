@@ -1,8 +1,7 @@
 const { promisify } = require('util')
 const express = require('express')
 
-const { tokenManager } = require('../service/TokenManager')
-const { Images } = require('../service/Images')
+const ImagesService = require('../service/ImagesService')
 const { getRedisConnection } = require('../redisConnection')
 const { updateAppData } = require('../middleware')
 
@@ -14,8 +13,18 @@ const searchRouter = express.Router()
 searchRouter.use(updateAppData())
 
 searchRouter.get('/', async (req, res) => {
+  // const imagesService = new ImagesService()
+  // const images = await imagesService.fetchPageImages()
+  // res.status(200).json({ images })
+
+
+  const images = await getAsync('images')
+  if (!images) {
+
+  }
+
   getAsync('images').then(images => {
-    res.status(200).json({ data: JSON.parse(images) })
+    res.status(200).json({ pictures: JSON.parse(images) })
   })
 
   // const token = await tokenManager.getToken()

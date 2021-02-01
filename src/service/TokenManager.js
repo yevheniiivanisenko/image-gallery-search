@@ -1,22 +1,27 @@
-const axios = require('axios')
+const { HttpClient } = require('./HttpClient')
+
+const LOG_LABEL = 'magesService'
 
 class TokenManager {
-  #token = 'test'
-  #AUTH_SERVICE_URL = `${process.env.IMAGE_SERVICE}/auth`
-  #SERVICE_KEY= process.env.IMAGE_SERVICE_API_KEY
-  #LOG_LABEL = 'TokenManager:'
+  static #SERVICE_URL = process.env.IMAGE_SERVICE_URL
+  static #SERVICE_KEY = process.env.IMAGE_SERVICE_API_KEY
+  static #httpClient = new HttpClient(this.#SERVICE_URL)
+  static #token = ''
+  static #LOG_LABEL = 'TokenMager:'
 
-  async loadToken() {
-    console.log(`${this.#LOG_LABEL} is loading token from ${this.#AUTH_SERVICE_URL}`)
-    const response = await axios.post(this.#AUTH_SERVICE_URL, {
+  static async loadToken() {
+    console.log(`${this.#LOG_LABEL}loadToken`)
+    const response = await this.#httpClient.getInstance().post(`/auth`, {
       apiKey: this.#SERVICE_KEY,
     })
     this.#token = response.data.token
   }
 
-  getToken() {
+  static async getToken() {
+    // loadToken in case it has not been loaded yet
+    if (!this.#token) await this.loadToken()
     return this.#token
   }
 }
 
-module.exports = { tokenManager: new TokenManager() }
+module.exports = { TokenManager }
