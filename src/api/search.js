@@ -1,37 +1,16 @@
-const { promisify } = require('util')
 const express = require('express')
 
-const ImagesService = require('../service/ImagesService')
-const { getRedisConnection } = require('../redisConnection')
-const { updateAppData } = require('../middleware')
-
-const redisConnection = getRedisConnection()
-const getAsync = promisify(redisConnection.get).bind(redisConnection)
+const ImagesService = require('../services/ImagesService')
+const SearchService = require('../services/SearchService')
 
 const searchRouter = express.Router()
 
-searchRouter.use(updateAppData())
-
-searchRouter.get('/', async (req, res) => {
-  // const imagesService = new ImagesService()
-  // const images = await imagesService.fetchPageImages()
-  // res.status(200).json({ images })
-
-
-  const images = await getAsync('images')
-  if (!images) {
-
-  }
-
-  getAsync('images').then(images => {
-    res.status(200).json({ pictures: JSON.parse(images) })
-  })
-
-  // const token = await tokenManager.getToken()
-  // const imagesService = new Images(token)
-  // const images = await imagesService.fetchAllImages()
-
-  // res.status(200).json(images)
+// TODO: Consider having a validation middleware
+searchRouter.get('/:searchTerm', async (req, res) => {
+  const imagesService = new ImagesService()
+  const searchService = new SearchService(imagesService)
+  const images = await searchService.getImagesByTerm(req.params.searchTerm)
+  res.status(200).json({ pictures: images })
 })
 
 module.exports = { searchRouter }

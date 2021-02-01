@@ -1,13 +1,11 @@
-const { HttpClient } = require('./HttpClient')
+const { HttpClient } = require('../utils/HttpClient')
 
-const LOG_LABEL = 'magesService'
-
-class TokenManager {
-  static #SERVICE_URL = process.env.IMAGE_SERVICE_URL
-  static #SERVICE_KEY = process.env.IMAGE_SERVICE_API_KEY
+class TokenManagerService {
+  static #LOG_LABEL = 'TokenMager:'
+  static #SERVICE_URL = process.env.IMAGES_SERVICE_URL
+  static #SERVICE_KEY = process.env.IMAGES_SERVICE_API_KEY
   static #httpClient = new HttpClient(this.#SERVICE_URL)
   static #token = ''
-  static #LOG_LABEL = 'TokenMager:'
 
   static async loadToken() {
     console.log(`${this.#LOG_LABEL}loadToken`)
@@ -18,10 +16,9 @@ class TokenManager {
   }
 
   static async getToken() {
-    // loadToken in case it has not been loaded yet
     if (!this.#token) await this.loadToken()
     return this.#token
   }
 }
 
-module.exports = { TokenManager }
+module.exports = { TokenManagerService }

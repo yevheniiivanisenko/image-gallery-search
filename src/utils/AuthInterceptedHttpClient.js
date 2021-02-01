@@ -1,5 +1,5 @@
 const { HttpClient } = require('./HttpClient')
-const { TokenManager } = require('./TokenManager')
+const { TokenManagerService } = require('../services/TokenManagerService')
 
 class AuthInterceptedHttpClient extends HttpClient {
   constructor(baseURL) {
@@ -16,8 +16,8 @@ class AuthInterceptedHttpClient extends HttpClient {
       async error => {
         const { status } = error.response
         if (status === 401) {
-          await TokenManager.loadToken()
-          const token = await TokenManager.getToken()
+          await TokenManagerService.loadToken()
+          const token = await TokenManagerService.getToken()
           error.config.headers['Authorization'] = `Bearer ${token}`
           return this._instance.request(error.config)
         }
@@ -27,7 +27,7 @@ class AuthInterceptedHttpClient extends HttpClient {
   }
 }
 
-const SERVICE_URL = process.env.IMAGE_SERVICE_URL
+const SERVICE_URL = process.env.IMAGES_SERVICE_URL
 
 module.exports = {
   AuthInterceptedHttpClient: new AuthInterceptedHttpClient(SERVICE_URL),

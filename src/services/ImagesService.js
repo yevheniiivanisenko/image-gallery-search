@@ -1,7 +1,7 @@
 const {
   AuthInterceptedHttpClient: HttpClient,
-} = require('./AuthInterceptedHttpClient')
-const { TokenManager } = require('./TokenManager')
+} = require('../utils/AuthInterceptedHttpClient')
+const { TokenManagerService } = require('./TokenManagerService')
 
 const toFlatImageList = imagePages =>
   imagePages.reduce((list, page) => {
@@ -13,7 +13,7 @@ class ImagesService {
 
   async fetchImage(imageId) {
     console.log(`${this.#LOG_LABEL}fetchImage`)
-    const token = await TokenManager.getToken()
+    const token = await TokenManagerService.getToken()
     const response = await HttpClient.getInstance().get(`/images/${imageId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -24,7 +24,7 @@ class ImagesService {
 
   async fetchPageImages(page = 1) {
     console.log(`${this.#LOG_LABEL}fetchPageImages`)
-    const token = await TokenManager.getToken()
+    const token = await TokenManagerService.getToken()
     const response = await HttpClient.getInstance().get(
       `/images?page=${page}`,
       {
@@ -39,7 +39,6 @@ class ImagesService {
     const {
       page: currentPage,
       pageCount: pagesTotal,
-      pictures,
     } = await this.fetchPageImages(initialPage)
     const pagesPromises = []
 
@@ -47,12 +46,11 @@ class ImagesService {
       pagesPromises.push(this.fetchPageImages(i))
     }
 
-    // TODO: consider spinning requests to get image details right after a request to /images?pages={num} is fulfilled succesfully
+    // TODO: Consider spinning requests to get image details right after a request to /images?pages={num} is fulfilled succesfully
     const pagesResponse = await Promise.all(pagesPromises)
     const imageIdList = toFlatImageList(pagesResponse)
     const imagePromises = imageIdList.map(i => this.fetchImage(i.id))
     const images = await Promise.all(imagePromises)
-
     return images
   }
 }
